@@ -12,7 +12,7 @@ app.use((req, res, next) => {
 
 // Page principale redirige le bot vers le site vulnérable
 app.get('/', (req, res) => {
-  const target = 'http://spacefleetcommand.404ctf.fr/spaceship/3';
+  const target = '/spaceship/3';
   console.log(`[!] Redirecting to ${target}`);
   res.set('Content-Type', 'text/html');
   res.send(`
